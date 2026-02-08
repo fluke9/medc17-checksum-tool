@@ -862,7 +862,7 @@ class MEDC17BinaryParser:
 
     def _is_flash_addr(self, addr: int) -> bool:
         """Check if address is a valid TriCore flash address."""
-        return 0x80000000 <= addr <= 0x807FFFFF
+        return 0x80000000 <= addr <= 0x8FFFFFFF
 
     def find_cvn_config(self) -> Optional[CVNConfig]:
         """
