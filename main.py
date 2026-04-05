@@ -801,10 +801,20 @@ class MEDC17BinaryParser:
         Returns:
             True if checksum is valid, False otherwise
         """
-        # Convert memory addresses to binary file offsets
-        # Translation: file_offset = memory_address - block_start_mem + block_start_bin
+        # Convert memory addresses to binary file offsets.
+        # First try the owning block's base. If the range falls outside (cross-bank
+        # checksum, e.g. 0x808xxxxx referenced from a 0x800xxxxx block), find the
+        # correct block that contains the range.
         start_offset = cs.cs_start - block_start_mem + block_start_bin
         end_offset = cs.cs_end - block_start_mem + block_start_bin
+
+        if start_offset < 0 or end_offset > len(self.data) or start_offset >= end_offset:
+            # Try to resolve via any block whose memory range covers cs.cs_start
+            for blk in self.bosch_blocks:
+                if blk.block_start <= cs.cs_start <= blk.block_end:
+                    start_offset = cs.cs_start - blk.block_start + blk.bin_start
+                    end_offset = cs.cs_end - blk.block_start + blk.bin_start
+                    break
 
         # Validate offsets are within binary
         if start_offset < 0 or end_offset > len(self.data) or start_offset >= end_offset:
